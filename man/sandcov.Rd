@@ -24,8 +24,8 @@ sandcov(model, id)
 \details{
 
   For a model of class '"haplo.ccs"', the sandwich variance-covariance
-  matrix is automatically provided as the object 'covariance'.  The
-  matrix may also be obtained by 'vcov'. See examples below.
+  matrix is automatically provided as the object 'covariance', or may be
+  extracted by 'vcov' (i.e., 'vcov.haplo.ccs'). See examples below.
 
 }
 \value{
@@ -34,29 +34,36 @@ sandcov(model, id)
   specified in 'model', calculated using the sandwich method.
 
 }
-\references{}
 \author{
   
-  Benjamin French and Thomas Lumley
-  
-  Department of Biostatistics
-  
-  University of Washington
+  Benjamin French and Thomas Lumley, University of Washington
   
 }
-\seealso{\code{\link{haplo.ccs}}}
+\references{
+
+  Liang KY, Zeger SL. (1986). Longitudinal data analysis using
+  generalized linear models. Biometrika 73:13-22.
+
+}
+\seealso{
+
+  \code{\link{glm}},
+  \code{\link{haplo.ccs}},
+  \code{\link{lm}}
+
+}
 \examples{
 
-data(Renin)
+data(renin)
 
 ## Fit a model for covariate effects.
 
-m1 <- glm(case ~ age + factor(race) + gender, family = binomial(link = logit))
+m1 <- glm(case ~ age + factor(race) + gender, family=binomial(link=logit))
 
 ## Obtain sandwich variance-covariance matrix.
 
 id <- 1:length(case)
-v1 <- sandcov(m1, id)
+v1 <- sandcov(model = m1, id = id)
 
 ## Calculate robust standard error estimates.
 
@@ -64,8 +71,7 @@ se1 <- sqrt(diag(v1))
 
 ## Fit a model for haplotype and covariate effects.
 
-m2 <- haplo.ccs(case ~ gender + age + factor(race) + haplo(geno[,1:12], mode = "additive"),
-                control = haplo.em.control(min.posterior=1e-4), referent = "223144")
+m2 <- haplo.ccs(case ~ gender + age + factor(race) + haplo(geno))
 
 ## Obtain sandwich variance-covariance matrix by one of two methods.
 

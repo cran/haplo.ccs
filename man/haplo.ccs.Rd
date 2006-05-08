@@ -8,7 +8,7 @@
 \alias{fitted.haplo.ccs}
 \alias{residuals.haplo.ccs}
 \alias{vcov.haplo.ccs}
-\alias{haps}
+\alias{haplo.freq}
 \alias{anova.haplo.ccs}
 \alias{logLik.haplo.ccs}
 \alias{AIC.haplo.ccs}
@@ -23,34 +23,40 @@
   probabilities, which are estimated by EM computation with progressive
   insertion of loci, are utilized as weights. The model is specified by
   a symbolic description of the linear predictor, which includes
-  specification of an allele matrix and an inheritance mode using
-  'haplo'. Note that use of this function requires installation of the
-  'haplo.stats' and 'survival' packages. See 'haplo.em' for a
-  description of EM computation of diplotype probabilities.
+  specification of an allele matrix, inheritance mode, and preferences
+  for rare haplotypes using 'haplo'. Note that use of this function
+  requires installation of the 'haplo.stats' and 'survival'
+  packages. See 'haplo.em' for a description of EM computation of
+  diplotype probabilities.
 
 }
 \usage{
 
-haplo.ccs(formula, ...)
+haplo.ccs(formula, data=NULL, ...)
 
-haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
-              names.int, ...)
+haplo.ccs.fit(y, x, int, geno, inherit.mode, group.rare, rare.freq, 
+              referent, names.x, names.int, ...)
 
 }
 \arguments{
 
   \item{formula}{a symbolic description of the model to be fit, which
     requires specification of an allele matrix and inheritance mode
-    using 'haplo'. Note that although 'haplo' does not specify a default
-    inheritance mode, 'additive' is the default inheritance mode for
-    'haplo.ccs'. More details on model formulae are given below.}
+    using 'haplo'. Note that 'additive' is the default inheritance mode
+    for 'haplo'. Preferences for grouping rare haplotypes are also
+    specified using 'haplo'. Note that by default 'haplo' groups
+    haplotypes with an estimated population frequency less than
+    0.02. More details on model formulae are given below.}
 
-  \item{control}{a list of control parameters for the EM computation of
-    diplotype probabilities. See 'haplo.em.control'.}
+  \item{data}{an optional data frame, list, or environment (or object
+    coercible by 'as.data.frame' to a data frame) containing the
+    variables in the model. If not found in 'data', the variables are
+    taken from 'environment(formula)', typically the environment from
+    which 'haplo.ccs' is called.}
 
   \item{referent}{a character string representing the haplotype to be used
-    as the referent. The haplotype that has the highest posterior
-    probability is the default referent.}
+    as the referent. The haplotype with the highest estimated population
+    frequency is the default referent.}
   
   \item{\dots}{optional model-fitting arguments to be passed to 'glm'.}
 
@@ -64,10 +70,16 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
 
   \item{inherit.mode}{the inheritance mode specified by 'haplo'.}
 
+  \item{group.rare}{a logical value indicating whether rare haplotypes
+    should be grouped, specified by 'haplo'.}
+  
+  \item{rare.freq}{the population haplotype frequency used to define the
+    rare haplotypes, specified by 'haplo'.}
+
   \item{names.x}{the column names of the design matrix for covariates.}
 
   \item{names.int}{the column names of the design matrix for
-    haplotype-environmental interaction.}
+    haplotype-environment interaction.}
 
 }
 \details{
@@ -86,11 +98,13 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
   'x', 'geno', and 'int' represent case-control status, the matrix of
   covariates, the matrix of alleles, and the matrix of terms that have
   interaction with the haplotypes to be estimated from the alleles. The
-  argument inherit.mode corresponds to the inheritance mode that is
-  specified by 'haplo'. 'names.x' and 'names.int' correspond to the
-  column names of 'x' and 'int', respectively. The background functions
-  'one', 'count.haps', and 'return.haps' are used in specifying the
-  model terms and neatly packaging the results.
+  argument 'inherit.mode' corresponds to the inheritance mode specified
+  by 'haplo', and the arguments 'group.rare' and 'rare.freq' correspond
+  to the preferences for grouping rare haplotypes specified by
+  'haplo'. 'names.x' and 'names.int' correspond to the column names of
+  'x' and 'int', respectively. The background functions 'one',
+  'count.haps', and 'return.haps' are used in specifying the model terms
+  and neatly packaging the results.
 
 }
 \value{
@@ -100,14 +114,16 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
 
   The function 'summary' (i.e., 'summary.haplo.ccs') obtains or prints a
   summary of the results, which include haplotype and covariate relative
-  risks, robust standard error estimates, and estimated diplotype
-  probabilities.
+  risks, robust standard error estimates, and estimated haplotype
+  frequencies.
   
   The generic accessory functions 'coefficients', 'fitted.values', and
   'residuals' extract corresponding features of the object returned by
-  'haplo.ccs'. The function 'vcov' (i.e., 'vcov.haplo.ccs') returns sandwich
-  variance-covariance estimates. The function 'haps' extracts
-  information returned by the EM computation of diplotype probabilities.
+  'haplo.ccs'. The function 'vcov' (i.e., 'vcov.haplo.ccs') returns
+  sandwich variance-covariance estimates. The function 'haplo.freq'
+  extracts information returned by the EM computation of haplotype
+  frequencies. Note that if rare haplotypes are grouped, then their
+  individual estimated frequencies are summed.
 
   An object of class '"haplo.ccs"' is a list containing at least the
   following components:
@@ -144,10 +160,10 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
     diplotype probabilities estimated by the EM computation.}
 
   \item{y}{a vector indicating case-control status, expanded for each
-    subject by the number of plausible haplotypes for that subject.}
+    subject by the number of plausible diplotypes for that subject.}
 
   \item{id}{the numeric vector used to identify subjects, expanded for
-    each subject by the number of plausible haplotypes for that
+    each subject by the number of plausible diplotypes for that
     subject.}
 
   \item{converged}{a logical indicating whether the IWLS fit converged.}
@@ -161,13 +177,13 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
   
   \item{offset}{the offset vector used.}
   
-  \item{control}{the value of the control argument used.}
-  
   \item{contrasts}{the contrasts used.}
   
   \item{xlevels}{a record of the levels of the factors used in fitting.}
   
   \item{inheritance.mode}{the method of inheritance.}
+
+  \item{rare.freq}{the value used to define the rare haplotypes.}
   
   \item{em.lnlike}{the value of the log likelihood at the last EM
     iteration.}
@@ -191,7 +207,9 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
   \item{hap.names}{character strings representing the unique
     haplotypes.}
   
-  \item{hap.probs}{the estimated frequency of each unique haplotype.}
+  \item{hap.probs}{the estimated frequency of each unique
+    haplotype. Note that if rare haplotypes are grouped, then their
+    individual estimated frequencies are summed.}
 
   \item{em.converged}{a logical indicating whether the EM computation
     converged.}
@@ -205,21 +223,6 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
   \item{em.control}{a list of control parameters for the EM computation.}
   
 }
-\references{
-
-  The help files for 'glm' and 'haplo.em' were instrumental in creating
-  this help file.
-
-}
-\author{
-
-  Benjamin French and Thomas Lumley
-  
-  Department of Biostatistics
-  
-  University of Washington
-
-}
 \note{
 
   The functions 'anova', 'logLik', and 'AIC' are not appropriate for
@@ -227,33 +230,41 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, control, referent, names.x,
   likelihood. Accordingly, model and null deviance are not reported.
 
 }
+\author{
+
+  Benjamin French and Thomas Lumley, University of Washington
+
+}
+\references{
+
+  The help files for 'glm', 'haplo.em', and 'haplo.glm' were
+  instrumental in creating this help file.
+
+}
 \seealso{
 
   \code{\link{glm}},
-  \code{\link[haplo.stats]{haplo.em}},
-  \code{\link[haplo.stats]{haplo.em.control}},
   \code{\link{haplo}},
+  \code{\link[haplo.stats]{haplo.em}},
+  \code{\link[haplo.stats]{haplo.glm}},
   \code{\link{sandcov}}
 
 }
 \examples{
 
-data(Renin)
+data(renin)
 
 ## Fit a model for haplotype effects.
 
-m1 <- haplo.ccs(case ~ haplo(geno[,1:12], mode = "additive"),
-                control = haplo.em.control(min.posterior=1e-4), referent = "223144")
+haplo.ccs(case ~ haplo(geno))
 
 ## Fit a model for haplotype and covariate effects.
 
-m2 <- haplo.ccs(case ~ gender + age + factor(race) + haplo(geno[,1:12], mode = "additive"),
-                control = haplo.em.control(min.posterior=1e-4), referent = "223144")
+haplo.ccs(case ~ gender + age + factor(race) + haplo(geno))
 
 ## Fit a model for haplotype interaction with gender.
 
-m3 <- haplo.ccs(case ~ age + factor(race) + gender*haplo(geno[,1:12], mode = "additive"),
-                control = haplo.em.control(min.posterior=1e-4), referent="223144")
+haplo.ccs(case ~ age + factor(race) + gender*haplo(geno))
 
 }
 \keyword{models}

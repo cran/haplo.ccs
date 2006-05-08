@@ -1,5 +1,5 @@
-\name{Renin}
-\alias{Renin}
+\name{renin}
+\alias{renin}
 \alias{age}
 \alias{case}
 \alias{gender}
@@ -16,7 +16,7 @@
 }
 \usage{
 
-data(Renin)
+data(renin)
 
 }
 \format{
@@ -40,22 +40,23 @@ data(Renin)
   'race': race (1=White, 2=Black, 3=Asian, 4=Other)
   
 }
-\author{
-
-  Benjamin French and Thomas Lumley
-  
-  Department of Biostatistics
-  
-  University of Washington
-
-}
 \note{
 
   Other covariates, such as gender, age, and race were randomly
   generated. Therefore no scientific inference should be made from these
   data.
   
-}  
+}
+\author{
+
+  Benjamin French and Thomas Lumley, University of Washington
+
+}
+\references{
+
+
+
+}
 \seealso{
 
   \code{\link{haplo.ccs}}
@@ -63,7 +64,7 @@ data(Renin)
 }
 \examples{
 
-data(Renin)
+data(renin)
 
 }
 \keyword{datasets}

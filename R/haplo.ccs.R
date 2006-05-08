@@ -12,11 +12,20 @@ sandcov <- function(model, id) {
   t(infl)%*%infl
 }
 
-haplo <- function(..., mode) {
-  mode <- match.arg(mode, c("additive", "dominant", "recessive"))
+haplo <- function(..., mode=c("additive", "dominant", "recessive"), group.rare=TRUE, rare.freq=0.02) {
+
+  if(group.rare==FALSE) rare.freq <- 0
+
   rval <- as.matrix(cbind(...))
+
+  mode <- match.arg(mode)
+
   attr(rval, "inheritance.mode") <- mode
+  attr(rval, "group.rare") <- group.rare
+  attr(rval, "rare.freq") <- rare.freq
+
   rval
+
 }
 
 count.haps <- function(h1, h2) {
@@ -37,9 +46,13 @@ one <- function(..., mode) {
   rep(1, NROW(args[[1]]))
 }
 
-haplo.ccs <- function(formula, ...) {
+haplo.ccs <- function(formula, data=NULL, ...) {
 
   cl <- mf <- match.call(expand.dots=FALSE)
+
+  if(missing(data))
+    data <- environment(formula)
+
   mf$... <- NULL
   mf[[1]] <- as.name("model.frame")
   mf.new <- mf
@@ -84,15 +97,17 @@ haplo.ccs <- function(formula, ...) {
   }
 
   inherit.mode <- attr(mf$haplo, "inheritance.mode")
+  group.rare <- attr(mf$haplo, "group.rare")
+  rare.freq <- attr(mf$haplo, "rare.freq")
 
   if(is.null(x)==1 & sum(one.int)==0)
-    model <- haplo.ccs.fit(y=y, x=NULL, int=NULL, geno=mf$haplo, inherit.mode=inherit.mode, names.x=NULL, names.int=NULL, ...)
+    model <- haplo.ccs.fit(y=y, x=NULL, int=NULL, geno=mf$haplo, inherit.mode=inherit.mode, group.rare=group.rare, rare.freq=rare.freq, names.x=NULL, names.int=NULL, ...)
 
   if(is.null(x)==0 & sum(one.int)==0)
-    model <- haplo.ccs.fit(y=y, x=data.frame(x), int=NULL, geno=mf$haplo, inherit.mode=inherit.mode, names.x=names.x, names.int=NULL, ...)
+    model <- haplo.ccs.fit(y=y, x=data.frame(x), int=NULL, geno=mf$haplo, inherit.mode=inherit.mode, group.rare=group.rare, rare.freq=rare.freq, names.x=names.x, names.int=NULL, ...)
 
   if(is.null(x)==0 & sum(one.int)!=0)
-    model <- haplo.ccs.fit(y=y, x=data.frame(x), int=data.frame(int), geno=mf$haplo, inherit.mode=inherit.mode, names.x=names.x, names.int=names.int, ...)
+    model <- haplo.ccs.fit(y=y, x=data.frame(x), int=data.frame(int), geno=mf$haplo, inherit.mode=inherit.mode, group.rare=group.rare, rare.freq=rare.freq, names.x=names.x, names.int=names.int, ...)
 
   class(model) <- c("haplo.ccs")
 
@@ -103,9 +118,9 @@ haplo.ccs <- function(formula, ...) {
 
 }
 
-haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, referent=return.haps(em$haplotype)[em$hap.prob==max(em$hap.prob)], names.x, names.int, ...) {
+haplo.ccs.fit <- function(y, x, int, geno, inherit.mode, group.rare, rare.freq, referent=return.haps(em$haplotype)[em$hap.prob==max(em$hap.prob)], names.x, names.int, ...) {
 
-  em <- haplo.em(geno, control=control)
+  em <- haplo.em(geno)
 
   y <- y[em$indx.sub]
   x <- x[em$indx.sub,]
@@ -113,10 +128,26 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, ref
   geno <- geno[em$indx.sub,]
   prob <- em$post
   id <- em$indx.sub
-  haplo.mat <- count.haps(em$hap1code, em$hap2code)
-  colnames(haplo.mat) <- paste(return.haps(em$haplotype))
 
-  haplo.mat <- haplo.mat[,c(colnames(haplo.mat)!=referent)==1]
+  rares <- (1:length(em$hap.prob))[em$hap.prob<=rare.freq]
+
+  if((group.rare==TRUE)&(length(rares)!=0)) {
+    rare.haps <- return.haps(em$haplotype[rares,])
+    commons <- (1:length(em$hap.prob))[em$hap.prob>rare.freq]
+    common.haps <- return.haps(em$haplotype[commons,])
+    hap1test <- em$hap1code %in% rares
+    hap2test <- em$hap2code %in% rares
+    hap1code <- ifelse(hap1test==TRUE, 1+max(em$hap1code, em$hap2code), em$hap1code)
+    hap2code <- ifelse(hap2test==TRUE, 1+max(em$hap2code, em$hap2code), em$hap2code)
+    haplo.mat <- count.haps(hap1code, hap2code)
+    names <- c(return.haps(em$haplotype)[commons], paste("Rare (<", rare.freq, ")", sep=""))
+    colnames(haplo.mat) <- names
+    haplo.mat <- haplo.mat[,c(colnames(haplo.mat)!=referent)==1]
+  } else {
+    haplo.mat <- count.haps(em$hap1code, em$hap2code)
+    colnames(haplo.mat) <- paste(return.haps(em$haplotype))
+    haplo.mat <- haplo.mat[,c(colnames(haplo.mat)!=referent)==1]
+  }
 
   if(inherit.mode=="dominant")
     haplo.mat <- ifelse(haplo.mat==2, 1, haplo.mat)
@@ -140,11 +171,20 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, ref
     fit <- glm(y ~ haplo.mat + x + haplo.int, family=quasibinomial(link=logit), weight=prob, ...)
   }
 
-  fit$hap.probs <- as.matrix(c(em$hap.prob[c(return.haps(em$haplotype)==referent)==1],
-                               em$hap.prob[c(return.haps(em$haplotype)!=referent)==1]))
-  fit$hap.names <- c(paste(referent, "(Ref)"), colnames(haplo.mat))
-  rownames(fit$hap.probs) <- c(fit$hap.names)
-  colnames(fit$hap.probs) <- c("Frequency")
+  if((group.rare==TRUE)&(length(rares)!=0)) {
+    fit$hap.probs <- as.matrix(c(em$hap.prob[c(return.haps(em$haplotype)==referent)==1],
+                                 em$hap.prob[c((return.haps(em$haplotype)!=referent)&(return.haps(em$haplotype)%in%common.haps))==1],
+                                 sum(em$hap.prob[c((return.haps(em$haplotype)!=referent)&(return.haps(em$haplotype)%in%rare.haps))==1])))
+    fit$hap.names <- c(paste(referent, "(Ref)"), colnames(haplo.mat))
+    rownames(fit$hap.probs) <- c(fit$hap.names)
+    colnames(fit$hap.probs) <- c("Frequency")
+  } else {
+    fit$hap.probs <- as.matrix(c(em$hap.prob[c(return.haps(em$haplotype)==referent)==1],
+                                 em$hap.prob[c(return.haps(em$haplotype)!=referent)==1]))
+    fit$hap.names <- c(paste(referent, "(Ref)"), colnames(haplo.mat))
+    rownames(fit$hap.probs) <- c(fit$hap.names)
+    colnames(fit$hap.probs) <- c("Frequency")
+  }
 
   fit$coefficients <- coef(fit)
   fit$covariance <- sandcov(fit, id)
@@ -171,6 +211,7 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, ref
   fit$df <- fit$df.residual
 
   fit$inheritance.mode <- inherit.mode
+  fit$rare.freq <- rare.freq
 
   fit$em.lnlike <- em$lnlike
   fit$em.lr <- em$lr
@@ -179,6 +220,7 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, ref
   fit$prior.weights <- em$post
   fit$hap1 <- return.haps(em$haplotype)[em$hap1code]
   fit$hap2 <- return.haps(em$haplotype)[em$hap2code]
+  
   fit$em.nreps <- em$nreps
   fit$em.max.pairs <- em$max.pairs
   fit$em.control <- em$control
@@ -188,7 +230,7 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode="additive", control, ref
 
   c(fit[c("coefficients", "covariance", "residuals", "fitted.values", "linear.predictors", "df", 
           "rank", "family", "iter", "weights", "prior.weights", "y", "id", "converged", "boundary", 
-          "model", "terms", "offset", "control", "contrasts", "xlevels", "inheritance.mode", 
+          "model", "terms", "offset", "contrasts", "xlevels", "inheritance.mode", "rare.freq",
           "em.lnlike", "em.lr", "em.df.lr", "hap1", "hap2", "hap.names", "hap.probs", 
           "em.converged", "em.nreps", "em.max.pairs", "em.control")])
 
@@ -247,7 +289,7 @@ fitted.haplo.ccs <- function(object, ...) {
   return(object$fitted.values)
 }
 
-haps <- function(object, ...) {
+haplo.freq <- function(object, ...) {
   return(object$hap.probs)
 }
 
@@ -261,4 +303,30 @@ AIC.haplo.ccs <- function(object, ..., k) {
 
 logLik.haplo.ccs <- function(object, ...) {
   stop("haplo.ccs does not fit by maximum likelihood.")
+}
+
+haplo.hpp <- function(model, prob=0.95) {
+
+  prob <- as.vector(prob)
+
+  hpp <- vector(length=length(unique(model$id)))
+  for(i in unique(model$id)) {
+    hpp[i] <- max(model$prior.weights[model$id==i])
+  }
+
+  out <- matrix(nrow=length(hpp), ncol=length(prob))
+  for(i in 1:length(prob)) {
+    for(j in 1:length(hpp)) {
+      out[j,i] <- hpp[j]>=prob[i]
+    }
+  }
+
+  num <- apply(out, 2, sum)
+  total <- length(unique(model$id))
+  summary <- t(as.matrix(num/total))
+  colnames(summary) <- prob
+  rownames(summary) <- "Proportion"
+
+  return(round(summary, max(3, getOption("digits")-3)))
+
 }
