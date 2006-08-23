@@ -237,6 +237,10 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, group.rare, rare.freq,
 }
 \references{
 
+  French B, Lumley T, Monks SA, Rice KM, Hindorff LA, Reiner AP, Psaty
+  BM. Simple estimates of haplotype relative risks in case-control
+  data. Genetic Epidemiology 2006; 30(6):485-494.
+    
   The help files for 'glm', 'haplo.em', and 'haplo.glm' were
   instrumental in creating this help file.
 

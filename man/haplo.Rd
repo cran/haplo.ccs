@@ -51,7 +51,9 @@ haplo(..., mode, group.rare=TRUE, rare.freq=0.02)
 }
 \references{
 
-
+  French B, Lumley T, Monks SA, Rice KM, Hindorff LA, Reiner AP, Psaty
+  BM. Simple estimates of haplotype relative risks in case-control
+  data. Genetic Epidemiology 2006; 30(6):485-494.
 
 }
 \seealso{

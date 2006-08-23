@@ -41,8 +41,12 @@ sandcov(model, id)
 }
 \references{
 
-  Liang KY, Zeger SL. (1986). Longitudinal data analysis using
-  generalized linear models. Biometrika 73:13-22.
+  French B, Lumley T, Monks SA, Rice KM, Hindorff LA, Reiner AP, Psaty
+  BM. Simple estimates of haplotype relative risks in case-control
+  data. Genetic Epidemiology 2006; 30(6):485-494.
+  
+  Liang KY, Zeger SL. Longitudinal data analysis using generalized
+  linear models. Biometrika 1986; 73(1):13-22.
 
 }
 \seealso{
