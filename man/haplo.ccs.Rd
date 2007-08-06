@@ -27,7 +27,8 @@
   for rare haplotypes using 'haplo'. Note that use of this function
   requires installation of the 'haplo.stats' and 'survival'
   packages. See 'haplo.em' for a description of EM computation of
-  diplotype probabilities.
+  diplotype probabilities. Currently missing genotype information is not
+  allowed.
 
 }
 \usage{
@@ -110,22 +111,18 @@ haplo.ccs.fit(y, x, int, geno, inherit.mode, group.rare, rare.freq,
 \value{
 
   'haplo.ccs' returns an object of class inheriting from
-  '"haplo.ccs"'. More details appear later in this section.
-
-  The function 'summary' (i.e., 'summary.haplo.ccs') obtains or prints a
-  summary of the results, which include haplotype and covariate relative
-  risks, robust standard error estimates, and estimated haplotype
-  frequencies.
-  
-  The generic accessory functions 'coefficients', 'fitted.values', and
-  'residuals' extract corresponding features of the object returned by
-  'haplo.ccs'. The function 'vcov' (i.e., 'vcov.haplo.ccs') returns
-  sandwich variance-covariance estimates. The function 'haplo.freq'
-  extracts information returned by the EM computation of haplotype
-  frequencies. Note that if rare haplotypes are grouped, then their
-  individual estimated frequencies are summed.
-
-  An object of class '"haplo.ccs"' is a list containing at least the
+  '"haplo.ccs"'. More details appear later in this section. The function
+  'summary' (i.e., 'summary.haplo.ccs') obtains or prints a summary of
+  the results, which include haplotype and covariate relative risks,
+  robust standard error estimates, and estimated haplotype
+  frequencies. The generic accessory functions 'coefficients',
+  'fitted.values', and 'residuals' extract corresponding features of the
+  object returned by 'haplo.ccs'. The function 'vcov' (i.e.,
+  'vcov.haplo.ccs') returns sandwich variance-covariance estimates. The
+  function 'haplo.freq' extracts information returned by the EM
+  computation of haplotype frequencies. Note that if rare haplotypes are
+  grouped, then their individual estimated frequencies are summed. An
+  object of class '"haplo.ccs"' is a list containing at least the
   following components:
 
   \item{formula}{the formula supplied.}

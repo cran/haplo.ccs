@@ -30,11 +30,11 @@ haplo(..., mode, group.rare=TRUE, rare.freq=0.02)
     should be grouped in the 'haplo.ccs' model. Note that the default is
     to group rare haplotypes.}
 
-  \item{rare.freq}{the population haplotype frequency used to define the
-    rare haplotypes. If 'group.rare=TRUE', then haplotypes with an
-    estimated population frequency less than or equal to 'rare.freq' are
-    grouped in the 'haplo.ccs' model. Note that the default haplotype
-    frequency is 0.02. 'rare.freq' is automatically set to 0 if
+  \item{rare.freq}{the population haplotype frequency to define rare
+    haplotypes. If 'group.rare=TRUE', then haplotypes with an estimated
+    population frequency less than or equal to 'rare.freq' are grouped
+    in the 'haplo.ccs' model. Note that the default haplotype frequency
+    is 0.02. 'rare.freq' is automatically set to 0 if
     'group.rare=FALSE'.}
   
 }

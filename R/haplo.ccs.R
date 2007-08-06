@@ -138,7 +138,7 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode, group.rare, rare.freq, 
     hap1test <- em$hap1code %in% rares
     hap2test <- em$hap2code %in% rares
     hap1code <- ifelse(hap1test==TRUE, 1+max(em$hap1code, em$hap2code), em$hap1code)
-    hap2code <- ifelse(hap2test==TRUE, 1+max(em$hap2code, em$hap2code), em$hap2code)
+    hap2code <- ifelse(hap2test==TRUE, 1+max(em$hap1code, em$hap2code), em$hap2code)
     haplo.mat <- count.haps(hap1code, hap2code)
     names <- c(return.haps(em$haplotype)[commons], paste("Rare (<", rare.freq, ")", sep=""))
     colnames(haplo.mat) <- names
