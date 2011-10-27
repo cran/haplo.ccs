@@ -156,11 +156,11 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode, group.rare, rare.freq, 
     haplo.mat <- ifelse(haplo.mat==1, 0, ifelse(haplo.mat==2, 1, 0))
   
   if(is.null(x)==1 & is.null(int)==1)
-    fit <- glm(y ~ haplo.mat, family=quasibinomial(link=logit), weight=prob, ...)
+    fit <- glm(y ~ haplo.mat, family=quasibinomial(link=logit), weights=prob, ...)
 
   if(is.null(x)==0 & is.null(int)==1) {
     x <- as.matrix(x)
-    fit <- glm(y ~ haplo.mat + x, family=quasibinomial(link=logit), weight=prob, ...)
+    fit <- glm(y ~ haplo.mat + x, family=quasibinomial(link=logit), weights=prob, ...)
   }
 
   if(is.null(x)==0 & is.null(int)==0) {
@@ -168,7 +168,7 @@ haplo.ccs.fit <- function(y, x, int, geno, inherit.mode, group.rare, rare.freq, 
     int <- as.matrix(int)
     haplo.int <- NULL
     for(i in 1:dim(int)[2]){haplo.int <- cbind(haplo.int, apply(haplo.mat, 2, function(x){int[,i]*x}))}
-    fit <- glm(y ~ haplo.mat + x + haplo.int, family=quasibinomial(link=logit), weight=prob, ...)
+    fit <- glm(y ~ haplo.mat + x + haplo.int, family=quasibinomial(link=logit), weights=prob, ...)
   }
 
   if((group.rare==TRUE)&(length(rares)!=0)) {
