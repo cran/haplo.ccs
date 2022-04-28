@@ -9,3 +9,17 @@ import(
   haplo.stats,
   survival
 )
+
+importFrom("stats", "coef", "glm", "model.matrix", "model.response",
+               "pt", "quasibinomial", "residuals", "terms")
+
+S3method(AIC,           haplo.ccs)
+S3method(anova,         haplo.ccs)
+S3method(coef,          haplo.ccs)
+S3method(fitted,        haplo.ccs)
+S3method(logLik,        haplo.ccs)
+S3method(residuals,     haplo.ccs)
+S3method(summary,       haplo.ccs)
+S3method(print,         haplo.ccs)
+S3method(vcov,          haplo.ccs)
+S3method(print,         summary.haplo.ccs)
