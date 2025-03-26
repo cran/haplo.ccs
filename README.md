@@ -5,3 +5,4 @@
 Benjamin French and Thomas Lumley
 
 License is [GPL-2](http://cran.nexr.com/web/licenses/GPL-2) and [GPL-3](http://cran.nexr.com/web/licenses/GPL-2)
+
